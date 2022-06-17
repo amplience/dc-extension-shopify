@@ -1,0 +1,85 @@
+name: Development Workflow
+
+on:
+  push:
+    branches:
+        - develop
+  pull_request:
+        types:
+          - closed
+        branches:
+          - develop
+          - feature/*
+          - hotfix/*
+          - fix/*
+env:
+  NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+  NETLIFY_SITE_ID: ${{ secrets.DEV_NETLIFY_SITE_ID }}
+
+jobs:
+  Build_Development:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.pull_request.merged == true || github.event_name == 'push' }}
+    steps:
+      - name: Warming Cache
+        uses: actions/checkout@v3
+        with:
+          ref: build-cache
+
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - uses: actions/cache@v2
+        id: yarn-cache
+        with:
+          path: |
+            **/node_modules
+            ${{ github.workspace }}/.next/cache
+          key: ${{ runner.os }}-modules-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Set Node version 16.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16.x
+          cache: 'yarn'
+
+      - name: Install Dependencies
+        run: yarn install --prefer-offline --frozen-lockfile
+
+      - name: Create .env file
+        run: |
+          touch ${{ github.workspace }}/.env
+          cat > ${{ github.workspace }}/.env << EOL
+          SHOPIFY_API_KEY=$SHOPIFY_API_KEY
+          SHOPIFY_API_SECRET=SHOPIFY_API_SECRET
+          SHOP=$SHOP
+          SCOPES=$SCOPES
+          HOST=$HOST
+          DYNAMODB_TABLE=$DYNAMODB_TABLE
+          REGION=$REGION
+          LOCAL_DB=$LOCAL_DB
+          EOL
+
+      - name: Create AWS credentials file for DynamoDB
+        run: |
+          mkdir ${{ github.workspace }}/.aws && touch ${{ github.workspace }}/.aws/credentials
+          cat > ${{ github.workspace }}./aws/credentials <<EOL
+          [default]
+          aws_secret_access_key=$AWS_SECRET_ACCESS_KEY
+          aws_access_key_id=$AWS_ACCESS_KEY_ID
+          region=$AWS_DEFAULT_REGION
+          EOL
+
+      #- name: Run Tests
+      #  run: yarn test
+
+      - name: Build & Deploy Development using Netlify CLI
+        run: |
+          touch ${{ github.workspace }}/env_var.txt
+          echo ${{ github.workspace }} > -p ${{ github.workspace }}/env_var.txt
+          yarn add --dev netlify-cli
+          netlify --telemetry-disable
+          mkdir -p ${{ github.workspace }}/.config/netlify/
+          node ${{ github.workspace }}/devops/scripts/netlify-cli-config.js
+          netlify deploy --build

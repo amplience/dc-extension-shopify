@@ -1,0 +1,20 @@
+[build]
+  command = "yarn build"
+  publish = "dist/.next"
+
+[dev]
+  command = "yarn dev"
+  functions = "dist/functions"
+  framework = "#custom"
+  port = 4444
+  publish = "dist/.next"
+  autoLaunch = true
+  targetPort = 3000
+
+[[redirects]]
+  from = "/_next/static/*"
+  to = "/static/:splat"
+  status = 200
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
