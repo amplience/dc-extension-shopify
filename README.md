@@ -34,6 +34,8 @@ yarn docker:db
 
 Running the app itself involves using the standard app commands from the [Shopify-App-CLI](https://github.com/Shopify/shopify-app-cli).
 
+Note: we use shopify-cli v2.12.0 for now (gem install shopify-cli -v 2.12.0)
+
 First, login to the cli
 
 ```
