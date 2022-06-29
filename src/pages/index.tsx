@@ -312,7 +312,18 @@ const Index: React.FC<props> = ({ shop, host, hostName }: props) => {
                                     return selectedExtensions
                                 }
                             )
-                            if (existingIndex !== []) {
+
+                            
+                            if (selectedExtensions.length > 0) {
+
+                                /* console.log('existingIndex', existingIndex)
+                                console.log('selectedExtensions', selectedExtensions) */
+
+                                //throw a warning to let the user know the form was not submitted
+                                setWarning(
+                                    `Amplience Extensions are already installed on the hub: "${newHub?.hub.name}".`
+                                )
+
                                 //fetch the existing extensions
                                 selectedExtensions.map(
                                     async (extension: any) => {
@@ -343,6 +354,7 @@ const Index: React.FC<props> = ({ shop, host, hostName }: props) => {
                                     }
                                 )
                             } else {
+                                console.log('create else')
                                 extensions.map((extension) => {
                                     newHub.hub.related.extensions.create(extension)
                                 })
@@ -355,14 +367,12 @@ const Index: React.FC<props> = ({ shop, host, hostName }: props) => {
                             })
                             setIsInstalled(true)
 
-                            //throw a warning to let the user know the form was not submitted
-                            setWarning(
-                                `Amplience Extensions are already installed on the hub: "${newHub?.hub.name}".`
-                            )
                         } else {
+                            console.log('create init')
                             extensions.map((extension) => {
                                 newHub.hub.related.extensions.create(extension)
                             })
+
                         }
 
                         //get correct schemas from the api endpoints
