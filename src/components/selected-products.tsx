@@ -62,7 +62,7 @@ export const SelectedProducts = ({
                     ></EmptyState>
                 ) : (
                     products.map((product, index) => (
-                        <>
+                        
                             <SortableResourceItem
                                 item={product}
                                 index={index}
@@ -70,7 +70,7 @@ export const SelectedProducts = ({
                                 id={product.id}
                                 handleRemoveProduct={handleRemoveProduct}
                             />
-                        </>
+                        
                     ))
                 )}
             </SortableContext>
