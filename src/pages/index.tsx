@@ -12,12 +12,20 @@ import {
     Heading,
     Spinner,
 } from '@shopify/polaris'
-import { ContentTypeSchema, DynamicContent, Extension } from 'dc-management-sdk-js'
+import {
+    ContentType,
+    ContentTypeCachedSchema,
+    ContentTypeSchema,
+    DynamicContent,
+    Extension,
+} from 'dc-management-sdk-js'
+import { access } from 'fs'
 import React, { useCallback, useState, useEffect, useRef } from 'react'
 import {
     isAmplienceConnected,
     updateAmplienceConnect,
 } from 'src/database/services/table-service'
+import ProductPicker from './product-picker'
 
 type props = {
     shop: string
@@ -38,6 +46,7 @@ const Index: React.FC<props> = ({ shop, host, hostName }: props) => {
     const [hubId, setHubId] = useState('')
     const [repoName, setRepoName] = useState('Content')
     const [error, setError] = useState({ message: '' })
+    const [warning, setWarning] = useState('')
 
     //Ref
     const errorRef = useRef<HTMLHeadingElement>(null)
@@ -58,8 +67,6 @@ const Index: React.FC<props> = ({ shop, host, hostName }: props) => {
                 setIsInstalled(connectionStatus)
                 setToken(dbData.accessToken)
             }
-
-            console.log(hostName)
         } catch (err) {
             console.log(err)
         } finally {
@@ -85,10 +92,40 @@ const Index: React.FC<props> = ({ shop, host, hostName }: props) => {
         return dcClient
     }
 
+    const getContentRepository = async () => {
+        const dcClient = await getDcClient()
+        const dcHub = await dcClient.hubs.get(hubId)
+
+        const repositoryList = await dcHub.related.contentRepositories.list()
+
+        const repositories =
+            //@ts-ignore
+            repositoryList._embedded[repositoryList.key]
+
+        const repoNames = repositories.map((repo: any) => {
+            return repo.name
+        })
+
+        const selectedRepoIndex = repoNames.indexOf(
+            repoName.toLocaleLowerCase()
+        )
+
+        const selectedRepoID = repositories[selectedRepoIndex].id
+
+        const contentRepo = await dcClient.contentRepositories.get(
+            selectedRepoID
+        )
+
+        return contentRepo
+    }
+
     const getDcHub = async () => {
         try {
             const dcClient = await getDcClient()
             const dcHub = await dcClient.hubs.get(hubId)
+
+            //@ts-ignore
+            const dct = dcClient.client.tokenProvider.token.access_token
 
             if (dcHub == undefined) {
                 throw Error(
@@ -96,7 +133,7 @@ const Index: React.FC<props> = ({ shop, host, hostName }: props) => {
                 )
             }
 
-            return dcHub
+            return { hub: dcHub, dcToken: dct }
         } catch (err: any) {
             console.log(err)
             setError({
@@ -110,13 +147,13 @@ const Index: React.FC<props> = ({ shop, host, hostName }: props) => {
     useEffect(() => {
         if (null !== successRef.current) {
             //successRef.current.scrollIntoView({behavior: 'smooth'});
-            successRef?.current.focus({preventScroll: false})
+            successRef?.current.focus({ preventScroll: false })
         }
     }, [isInstalled])
     useEffect(() => {
         if (null !== errorRef.current) {
             //errorRef.current.scrollIntoView({behavior: 'smooth'});
-            errorRef?.current.focus({preventScroll: false})
+            errorRef?.current.focus({ preventScroll: false })
         }
     }, [error])
 
@@ -131,7 +168,10 @@ const Index: React.FC<props> = ({ shop, host, hostName }: props) => {
             const registerExtension = async () => {
                 setLoading(true)
                 setError({ message: '' })
-                let uuid = token?.slice(token.length - 5);
+                setWarning('')
+                let uuid = token?.slice(token.length - 5)
+                const iconUrl =
+                    'https://bigcontent.io/cms/icons/bond/bond-banner3col.png'
 
                 const collectionPicker = new Extension({
                     name: `col-p-${uuid}`,
@@ -174,59 +214,465 @@ const Index: React.FC<props> = ({ shop, host, hostName }: props) => {
                       `,
                 })
 
+                const collectionPickerContentType = new ContentType({
+                    contentTypeUri: `${hostName}/api/schemas/collection-picker`,
+                    settings: {
+                        label: 'Shopify collection picker',
+                        icons: [
+                            {
+                                size: 256,
+                                url: iconUrl,
+                            },
+                        ],
+                        visualizations: [
+                            {
+                                label: 'Example Visualization',
+                                templatedUri: `${hostName}/visualization?shop=${shop}&host=${host}&vse={{vse.domain}}&content={{content.sys.id}}&contentType=collection-picker`,
+                                default: true,
+                            },
+                        ],
+                    },
+                })
+
+                const ProductPickerContentType = new ContentType({
+                    contentTypeUri: `${hostName}/api/schemas/product-picker`,
+                    settings: {
+                        label: 'Shopify product picker',
+                        icons: [
+                            {
+                                size: 256,
+                                url: iconUrl,
+                            },
+                        ],
+                        visualizations: [
+                            {
+                                label: 'Example Visualization',
+                                templatedUri: `${hostName}/visualization?shop=${shop}&host=${host}&vse={{vse.domain}}&content={{content.sys.id}}&contentType=product-picker`,
+                                default: true,
+                            },
+                        ],
+                    },
+                })
+
+                const ProductFilterContentType = new ContentType({
+                    contentTypeUri: `${hostName}/api/schemas/product-filter`,
+                    settings: {
+                        label: 'Shopify product filter',
+                        icons: [
+                            {
+                                size: 256,
+                                url: iconUrl,
+                            },
+                        ],
+                        visualizations: [
+                            {
+                                label: 'Example Visualization',
+                                templatedUri: `${hostName}/visualization?shop=${shop}&host=${host}&vse={{vse.domain}}&content={{content.sys.id}}&contentType=product-filter`,
+                                default: true,
+                            },
+                        ],
+                    },
+                })
+
                 const extensions = [
                     collectionPicker,
                     productPicker,
                     productFilter,
                 ]
 
+                const contentTypes = [
+                    ProductPickerContentType,
+                    ProductFilterContentType,
+                    collectionPickerContentType,
+                ]
+
                 try {
                     const newHub = await getDcHub()
                     if (newHub == undefined) return
+
+                    //
                     try {
-                        const Extensions = await newHub.related.extensions.list()
-                        if (Extensions) {
+                        //Check if the Extensions are already created in the amplience dashboard
+                        const Extensions = await newHub.hub.related.extensions.list()
+                        if (Extensions.page!.totalElements! > 0) {
                             const extensionList =
                                 //@ts-ignore
                                 Extensions?._embedded.extensions
-                            const existingIndex = extensionList.findIndex(
-                                (extension: any) =>
-                                    extension.label === 'Collection Picker'
+                            let selectedExtensions: any = []
+                            const existingIndex = extensionList.map(
+                                (extension: any) => {
+                                    if (
+                                        extension.label ==
+                                            'Collection Picker' ||
+                                        extension.label == 'Product Picker' ||
+                                        extension.label == 'Product Filter'
+                                    ) {
+                                        selectedExtensions.push(extension)
+                                    }
+                                    return selectedExtensions
+                                }
                             )
-                            if (existingIndex !== -1) {
+                            if (existingIndex !== []) {
                                 //fetch the existing extensions
-                                extensionList.map(async (extension: any) => {
-                                    const currentExtension = await newHub.related.extensions.getByName(
-                                        extension.name
-                                    )
+                                selectedExtensions.map(
+                                    async (extension: any) => {
+                                        const currentExtension = await newHub.hub.related.extensions.getByName(
+                                            extension.name
+                                        )
 
-                                    const updatedExtension = new Extension({
-                                        parameters: `
+                                        const oldUuid = extension.name.slice(
+                                            extension.name.length - 5
+                                        )
+                                        const name = extension.name.replace(
+                                            oldUuid,
+                                            uuid
+                                        )
+
+                                        const updatedExtension = new Extension({
+                                            name: name,
+                                            parameters: `
                                             {
                                               "token": "${token}"
                                             }
                                           `,
-                                    })
+                                        })
 
-                                    currentExtension.related.update(updatedExtension);
-                                })
-
-                                //Set the state to installed
-                                updateAmplienceConnect({
-                                    shop: shop,
-                                    status: true,
-                                })
-                                setIsInstalled(true)
-
-                                //throw an error to let the user know the form was not submitted
-                                throw Error(
-                                    `Amplience Extensions are already installed on the hub: "${newHub?.name}".`
+                                        currentExtension.related.update(
+                                            updatedExtension
+                                        )
+                                    }
                                 )
+                            } else {
+                                extensions.map((extension) => {
+                                    newHub.hub.related.extensions.create(extension)
+                                })
                             }
+
+                            //Set the state to installed
+                            updateAmplienceConnect({
+                                shop: shop,
+                                status: true,
+                            })
+                            setIsInstalled(true)
+
+                            //throw a warning to let the user know the form was not submitted
+                            setWarning(
+                                `Amplience Extensions are already installed on the hub: "${newHub?.hub.name}".`
+                            )
+                        } else {
+                            extensions.map((extension) => {
+                                newHub.hub.related.extensions.create(extension)
+                            })
                         }
-                        extensions.map((extension) => {
-                            newHub.related.extensions.create(extension)
+
+                        //get correct schemas from the api endpoints
+                        const collectionSchemaReq = await fetch(
+                            `/api/schemas/collection-picker?shop=${shop}`
+                        )
+                        const collectionSchemaRes = JSON.stringify(
+                            await collectionSchemaReq.json(),
+                            null,
+                            '\t'
+                        )
+                        const pickerSchemaReq = await fetch(
+                            `/api/schemas/product-picker?shop=${shop}`
+                        )
+                        const pickerSchemaRes = JSON.stringify(
+                            await pickerSchemaReq.json(),
+                            null,
+                            '\t'
+                        )
+                        const filterSchemaReq = await fetch(
+                            `/api/schemas/product-filter?shop=${shop}`
+                        )
+                        const filterSchemaRes = JSON.stringify(
+                            await filterSchemaReq.json(),
+                            null,
+                            '\t'
+                        )
+
+                        const collectionSchemaId = `${hostName}/api/schemas/collection-picker`
+                        const pickerSchemaId = `${hostName}/api/schemas/product-picker`
+                        const filterSchemaId = `${hostName}/api/schemas/product-filter`
+
+                        const collectionPickerSchema = new ContentTypeSchema({
+                            validationLevel: 'CONTENT_TYPE',
+                            body: collectionSchemaRes,
+                            schemaId: collectionSchemaId,
                         })
+                        const productPickerSchema = new ContentTypeSchema({
+                            validationLevel: 'CONTENT_TYPE',
+                            body: pickerSchemaRes,
+                            schemaId: pickerSchemaId,
+                        })
+                        const productFilterSchema = new ContentTypeSchema({
+                            validationLevel: 'CONTENT_TYPE',
+                            body: filterSchemaRes,
+                            schemaId: filterSchemaId,
+                        })
+
+                        const schemas = [
+                            {
+                                schema: collectionPickerSchema,
+                                id: 'collection-picker',
+                            },
+                            {
+                                schema: productPickerSchema,
+                                id: 'product-picker',
+                            },
+                            {
+                                schema: productFilterSchema,
+                                id: 'product-filter',
+                            },
+                        ]
+
+                        const updateSchema = async () => {
+                            //check to see if there are any schemas
+                            const fetchReq = await fetch(
+                                `https://api.amplience.net/v2/content/hubs/${hubId}/content-type-schemas/`,
+                                {
+                                    method: 'GET',
+                                    headers: {
+                                        Authorization: `Bearer ${newHub.dcToken}`,
+                                        'Content-Type': 'application/json',
+                                    },
+                                }
+                            )
+                            const fetchRes = await fetchReq.json()
+
+                            //new array to store schemas we have created
+                            interface Schemas {
+                                cts: ContentTypeSchema
+                                label: string
+                            }
+                            let selectedSchema: Schemas[] = []
+
+                            //map through schemas & find matching schemas to the ones we created
+                            fetchRes?._embedded[
+                                //@ts-ignore
+                                'content-type-schemas'
+                            ].map((cts: any) => {
+                                if (
+                                    cts.schemaId ==
+                                        `${hostName}/api/schemas/collection-picker` ||
+                                    cts.schemaId ==
+                                        `${hostName}/api/schemas/product-picker` ||
+                                    cts.schemaId ==
+                                        `${hostName}/api/schemas/product-filter`
+                                ) {
+                                    const label = cts.schemaId.replace(
+                                        `${hostName}/api/schemas/`,
+                                        ''
+                                    )
+                                    selectedSchema.push({
+                                        cts: cts,
+                                        label: label,
+                                    })
+                                }
+                                return selectedSchema
+                            })
+
+                            //map through the selected schemas and update them with the most recent fetch to the schema api
+                            selectedSchema.map(async (schema) => {
+                                const updatePatchURL = `https://api.amplience.net/v2/content/content-type-schemas/${
+                                    schema.cts!.id
+                                }`
+                                //using the id as a key select the correct body to deliver to the patch.
+                                const updatedBody =
+                                    schemas[
+                                        schemas
+                                            .map((body) => {
+                                                return body.id
+                                            })
+                                            .indexOf(schema.label)
+                                    ]
+
+                                const patchReq = await fetch(updatePatchURL, {
+                                    method: 'PATCH',
+                                    headers: {
+                                        Authorization: `Bearer ${newHub.dcToken}`,
+                                        'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify({
+                                        body: updatedBody.schema.body,
+                                    }),
+                                })
+                                const patchRes = await patchReq.json()
+                                return patchRes
+                            })
+
+                            if (fetchReq.ok) {
+                                return fetchRes
+                            }
+
+                            const responseError = {
+                                type: 'Error',
+                                message: fetchRes.message || 'Duplicate',
+                            }
+
+                            let error = new Error()
+                            error = { ...error, ...responseError }
+                            throw error
+                        }
+
+                        const createSchemas = async () => {
+                            schemas.map(async (schema) => {
+                                try {
+                                    const fetchReq = await fetch(
+                                        `https://api.amplience.net/v2/content/hubs/${hubId}/content-type-schemas`,
+                                        {
+                                            method: 'POST',
+                                            headers: {
+                                                Authorization: `Bearer ${newHub.dcToken}`,
+                                                'Content-Type':
+                                                    'application/json',
+                                            },
+                                            body: JSON.stringify(schema.schema),
+                                        }
+                                    )
+                                    const fetchRes = await fetchReq.json()
+
+                                    if (fetchReq.ok) {
+                                        console.log(
+                                            'Created Schema: ',
+                                            schema.id
+                                        )
+                                        return fetchRes
+                                    }
+
+                                    const responseError = {
+                                        type: 'Error',
+                                        message:
+                                            fetchRes.message ||
+                                            'Content Type already exists',
+                                    }
+
+                                    let error = new Error()
+                                    error = { ...error, ...responseError }
+                                    throw error
+                                } catch (err: any) {
+                                    updateSchema()
+                                    console.log(
+                                        'Schema: ',
+                                        schema.id,
+                                        ' Updated'
+                                    )
+                                }
+                            })
+                        }
+
+                        createSchemas()
+
+                        // Get the user selected repository
+                        const contentRepo = await getContentRepository()
+                        //Check if the Content Types are already created in the amplience dashboard
+                        let ContentTypes = await newHub.hub.related.contentTypes.list()
+                        if (ContentTypes.page!.totalElements! > 0) {
+                            const contentTypeList =
+                                //@ts-ignore
+                                ContentTypes?._embedded[
+                                    //@ts-ignore
+                                    ContentTypes.key
+                                ]
+
+                            //find content types matching our schemas uri store them in an array to use later
+                            interface ContentTypes {
+                                type: ContentType
+                                label: string
+                            }
+
+                            let selectedTypes: ContentTypes[] = []
+                            contentTypeList.map((ct: any) => {
+                                if (
+                                    ct.contentTypeUri ==
+                                        `${hostName}/api/schemas/collection-picker` ||
+                                    ct.contentTypeUri ==
+                                        `${hostName}/api/schemas/product-picker` ||
+                                    ct.contentTypeUri ==
+                                        `${hostName}/api/schemas/product-filter`
+                                ) {
+                                    const label = ct.contentTypeUri.replace(
+                                        `${hostName}/api/schemas/`,
+                                        ''
+                                    )
+                                    selectedTypes.push({
+                                        type: ct,
+                                        label: label,
+                                    })
+                                }
+                                return selectedTypes
+                            })
+
+                            //if we have matching types then assign those to the user selected
+                            if (selectedTypes.length > 0) {
+                                //fetch the existing extensions and assign them to the selected repo
+                                selectedTypes.map(async (ct) => {
+                                    contentRepo.related.contentTypes.assign(
+                                        ct.type!.id!
+                                    )
+                                    const contentType = await newHub.hub.related.contentTypes.get(
+                                        ct.type!.id!
+                                    )
+                                    contentType.related.update(
+                                        new ContentType({
+                                            contentTypeUri: `${hostName}/api/schemas/${ct.label}`,
+                                            settings: {
+                                                label:
+                                                    'Shopify ' +
+                                                    ct.label.replace('-', ' '),
+                                                icons: [
+                                                    {
+                                                        size: 256,
+                                                        url: iconUrl,
+                                                    },
+                                                ],
+                                                visualizations: [
+                                                    {
+                                                        label:
+                                                            'Example Visualization',
+                                                        templatedUri: `${hostName}/visualization?shop=${shop}&host=${host}&vse={{vse.domain}}&content={{content.sys.id}}&contentType=${ct.label}`,
+                                                        default: false,
+                                                    },
+                                                ],
+                                            },
+                                        })
+                                    )
+                                    
+                                    const updatedcachedSchema = new ContentTypeCachedSchema()
+                                    await contentType.related.contentTypeSchema.update(
+                                        updatedcachedSchema
+                                    )
+
+                                    console.log(
+                                        'Content Type: ',
+                                        ct.label,
+                                        ' Updated & Synced'
+                                    )
+                                })
+                            } else {
+                                contentTypes.map(async (contentType) => {
+                                    await newHub.hub.related.contentTypes
+                                        .register(contentType)
+                                        .then(async (res) => {
+                                            await contentRepo.related.contentTypes.assign(
+                                                res.id!
+                                            )
+                                            console.log('Created Content Type')
+                                        })
+                                })
+                            }
+                        } else {
+                            contentTypes.map(async (contentType) => {
+                                await newHub.hub.related.contentTypes
+                                    .register(contentType)
+                                    .then(async (res) => {
+                                        await contentRepo.related.contentTypes.assign(
+                                            res.id!
+                                        )
+                                        console.log('Created Content Type')
+                                    })
+                            })
+                        }
 
                         updateAmplienceConnect({ shop: shop, status: true })
                         setIsInstalled(true)
@@ -323,7 +769,7 @@ const Index: React.FC<props> = ({ shop, host, hostName }: props) => {
                 </Layout.Section>
                 <Layout.Section>
                     <Card title="Configuration">
-                        {error.message.length > 0 && (
+                        {error?.message?.length > 0 && (
                             <Card.Section>
                                 <Banner
                                     ref={errorRef}
@@ -338,6 +784,20 @@ const Index: React.FC<props> = ({ shop, host, hostName }: props) => {
                                         extentions:
                                     </p>
                                     <span>{error.message}</span>
+                                </Banner>
+                            </Card.Section>
+                        )}
+                        {warning?.length > 0 && (
+                            <Card.Section>
+                                <Banner
+                                    ref={errorRef}
+                                    title="Warning"
+                                    status="warning"
+                                    onDismiss={() => {
+                                        setWarning('')
+                                    }}
+                                >
+                                    <span>{warning}</span>
                                 </Banner>
                             </Card.Section>
                         )}
@@ -407,7 +867,7 @@ const Index: React.FC<props> = ({ shop, host, hostName }: props) => {
                                         helpText={
                                             <span>
                                                 The default repository name is
-                                                {"Content"}, If you would like
+                                                {'Content'}, If you would like
                                                 your extensions to be installed
                                                 on another repository, enter
                                                 that new name here.
