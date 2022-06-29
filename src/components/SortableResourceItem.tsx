@@ -30,14 +30,19 @@ export const SortableResourceItem = ({
     handleRemoveProduct,
 }: SortableResourceItemProps) => {
     const { title, status, priceRangeV2, featuredImage } = item
+
+    //console.log('featuredImage', featuredImage);
     let imgSrc, imgAlt
-    if (typeof featuredImage !== undefined) {
+    if (featuredImage != null && typeof featuredImage !== undefined) {
         imgSrc = featuredImage?.transformedSrc
         imgAlt = featuredImage?.altText
     } else {
         imgSrc = ImageMajor
         imgAlt = 'placeholder product image'
     }
+
+    //console.log('imgSrc', imgSrc)
+
     const Capitalize = (s: string) => {
         return s[0].toUpperCase() + s.slice(1).toLowerCase()
     }
