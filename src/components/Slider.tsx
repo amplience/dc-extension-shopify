@@ -3,6 +3,7 @@ import '@splidejs/splide/css'
 import Splide from '@splidejs/splide'
 import CollectionCard from './CollectionCard'
 import { Product } from 'src/models/Product'
+import { useRouter } from 'next/router'
 
 type sliderProps = {
     data?: any
@@ -11,12 +12,12 @@ type sliderProps = {
 const Slider = ({ data }: sliderProps) => {
     const splideEl = useRef<HTMLDivElement>(null)
     const [sliderItems, setSliderItems] = useState([])
-    const [collectionHandle, setCollectionHandle] = useState('')
-    const schemaURL = 'https://schema.amplience-extension.myshopify.com/'
+    const router = useRouter();
+    const contentType = router.query.contentType ? router.query.contentType.toString() : '';
 
     let collectionQuery = () => {
-        switch (data._meta.schema.replace(schemaURL, '')) {
-            case 'collection-carousel':
+        switch (contentType) {
+            case 'collection-picker':
                 return `
           {
               collection(id: "${data.collection.id}") {
@@ -43,10 +44,10 @@ const Slider = ({ data }: sliderProps) => {
               }
           }
           `
-            case 'product-picker-carousel':
+            case 'product-picker':
                 console.log(data)
                 return data.productPicker.queryString
-            case 'product-filter-carousel':
+            case 'product-filter':
                 console.log(data)
                 return data['product-filter'].queryString
             default:

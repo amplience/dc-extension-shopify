@@ -1,18 +1,19 @@
+import { useRouter } from "next/router";
 import Slider from "./Slider";
 
 export const Visualizer = ({ data }: any) => {
-    // const router = useRouter();
-    // const stagingEnvironment = router.query.vse ? router.query.vse.toString() : '';
-    const schemaURL = 'https://schema.amplience-extension.myshopify.com/';
+     const router = useRouter();
+     const contentType = router.query.contentType ? router.query.contentType.toString() : '';
   
     console.log(data);
+    console.log(contentType)
   
-    switch (data._meta.schema.replace(schemaURL, '')) {
-      case 'collection-carousel':
+    switch (contentType) {
+      case 'collection-picker':
         return <Slider data={data} />;
-      case 'product-picker-carousel' :
+      case 'product-picker' :
         return <Slider data={data} />;
-        case 'product-filter-carousel' :
+        case 'product-filter' :
         return <Slider data={data} />;
       default:
         return <h2> Schema Name Mismatch. </h2>;

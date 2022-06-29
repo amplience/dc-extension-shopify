@@ -18,7 +18,7 @@ export default async function handler(
         res.status(200).json(
             {
                 "$schema": "http://json-schema.org/draft-07/schema#",
-                "$id": "https://schema.amplience-extension.myshopify.com/product-picker-carousel",
+                "$id": `${process.env.HOST}/api/schemas/product-picker`,
             
                 "title": "Title",
                 "description": "Description",

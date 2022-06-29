@@ -17,7 +17,7 @@ export default async function handler(
         res.status(200).json(
             {
                 "$schema": "http://json-schema.org/draft-07/schema#",
-                "$id": "https://d643-24-191-86-236.ngrok.io/api/schemas/product-filters",
+                "$id": `${process.env.HOST}/api/schemas/product-filter`,
             
                 "title": "Title",
                 "description": "Description",

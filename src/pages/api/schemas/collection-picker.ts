@@ -17,7 +17,7 @@ export default async function handler(
         res.status(200).json(
             {
                 "$schema": "http://json-schema.org/draft-07/schema#",
-                "$id": "https://d643-24-191-86-236.ngrok.io/api/schemas/collection-picker",
+                "$id": `${process.env.HOST}/api/schemas/collection-picker`,
                 "title": "Title",
                 "description": "Description",
                 "allOf": [

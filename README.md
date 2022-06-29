@@ -7,7 +7,10 @@ Embedded Shopify app made with Node, [Next.js](https://nextjs.org/), [Shopify-ko
 - Docker
 - Node.js + npm
 - ngrok account
-- [shopify-cli](https://github.com/Shopify/shopify-app-cli) installed
+- [shopify-cli](https://github.com/Shopify/shopify-app-cli) installed version 2.12.0 using the command:
+```
+> sudo gem install shopify-cli -v 2.12.0
+```
 - If you don’t have one, [create a Shopify partner account](https://partners.shopify.com/signup).
 - If you don’t have one, [create a Development store](https://help.shopify.com/en/partners/dashboard/development-stores#create-a-development-store) where you can install and test your app.
 - In the Partner dashboard, [create a new app](https://help.shopify.com/en/api/tools/partner-dashboard/your-apps#create-a-new-app).
@@ -33,8 +36,6 @@ yarn docker:db
 ### Running the app
 
 Running the app itself involves using the standard app commands from the [Shopify-App-CLI](https://github.com/Shopify/shopify-app-cli).
-
-Note: we use shopify-cli v2.12.0 for now (gem install shopify-cli -v 2.12.0)
 
 First, login to the cli
 
