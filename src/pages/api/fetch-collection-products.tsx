@@ -83,7 +83,7 @@ export default async function handler(req:NextApiRequest, res:NextApiResponse) {
 
     try {
         if(req.method === 'GET') {
-            if (!req.query.shop || !req.query.key || !req.query.collection || req.query.hub.length !== 24) {
+            if (!req.query.shop || !req.query.key || !req.query.collection || req.query.hub?.length !== 24) {
                 throw new Error("invalid request body")
             }
 
