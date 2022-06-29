@@ -1,6 +1,7 @@
 import { Badge, EmptyState, ResourceItem, ResourceList, Stack, TextStyle, Thumbnail } from "@shopify/polaris";
 import { Product } from "src/models/Product";
-const placeholderImgSrc = "https://cdn.shopify.com/s/files/1/0533/2089/files/placeholder-images-product-2_small.png?format=webp"
+import { ImageMajor } from '@shopify/polaris-icons'
+// const placeholderImgSrc = "https://cdn.shopify.com/s/files/1/0533/2089/files/placeholder-images-product-2_small.png?format=webp"
 interface ProductFilterPreviewProps {
     products: Product[]
     loading: boolean
@@ -40,11 +41,11 @@ export const ProductFilterPreview = ({products, loading}:ProductFilterPreviewPro
             renderItem={(item, id, index)=> {
                 const {title, status, vendor, priceRangeV2, featuredImage} = item;
                 let imgSrc, imgAlt
-                if(typeof featuredImage !== undefined) {
+                if(featuredImage != null && typeof featuredImage !== undefined) {
                     imgSrc = featuredImage?.transformedSrc
                     imgAlt = featuredImage?.altText
                 } else {
-                    imgSrc = placeholderImgSrc
+                    imgSrc = ImageMajor
                     imgAlt = "placeholder product image"
                 }
 
