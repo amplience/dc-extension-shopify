@@ -55,11 +55,19 @@ const ProductPicker = ({ shop, hostName }: ProductPickerProps) => {
      */
     async function loadFieldValues() {
         const dceSdk = sdkRef.current
+
+        //console.log('dceSdk:', dceSdk)
+
         if (typeof dceSdk !== 'undefined') {
             const fieldValue = (await dceSdk.field.getValue()) as FieldModel
-            if (typeof fieldValue !== 'undefined' && fieldValue.queryString) {
+
+            //console.log('fieldValue:', fieldValue)
+
+            // queryString may not exist yet and products[] may be empty...
+            if (typeof fieldValue !== 'undefined' && fieldValue.queryString && fieldValue.products.length > 0) {
                 // Use saved query to fetch fresh product data
                 setLoading(true)
+
                 // DceSDK passed here because without this argument, the fetchProductsGQL
                 // function loses reference to the SDK object
                 console.log(fieldValue.products)
