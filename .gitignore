@@ -43,3 +43,4 @@ netlify/
 
 #vscode
 .vscode
+.vercel

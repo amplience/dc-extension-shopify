@@ -5,7 +5,6 @@ const apiKey = JSON.stringify(process.env.SHOPIFY_API_KEY)
 const host = JSON.stringify(process.env.HOST)
 
 module.exports = {
-    distDir: 'dist/.next',
     plugins: [
         new Dotenv()
     ],
