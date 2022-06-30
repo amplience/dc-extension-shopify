@@ -6,7 +6,7 @@
   "license": "UNLICENSED",
   "private": true,
   "engines": {
-    "node": "16.14.1"
+    "node": "16.14.0"
   },
   "nodemonConfig": {
     "exec": "npm-run-all compile serve:dev",
