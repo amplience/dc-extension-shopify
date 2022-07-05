@@ -11,7 +11,6 @@ export default async function handler(
 
     try {
         const data = await db.getShopItems({ shop: req.query.shop });
-        console.log(data);
         const tokenFragment = data?.accessToken.slice(data.accessToken.length - 5)
         const extensionName = `prod-f-${tokenFragment}`
         res.status(200).json(

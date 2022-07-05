@@ -31,7 +31,6 @@ export const SortableResourceItem = ({
 }: SortableResourceItemProps) => {
     const { title, status, priceRangeV2, featuredImage } = item
 
-    //console.log('featuredImage', featuredImage);
     let imgSrc, imgAlt
     if (featuredImage != null && typeof featuredImage !== undefined) {
         imgSrc = featuredImage?.transformedSrc
@@ -41,7 +40,6 @@ export const SortableResourceItem = ({
         imgAlt = 'placeholder product image'
     }
 
-    //console.log('imgSrc', imgSrc)
 
     const Capitalize = (s: string) => {
         return s[0].toUpperCase() + s.slice(1).toLowerCase()

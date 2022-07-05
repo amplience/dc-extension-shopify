@@ -4,8 +4,12 @@ import { DefaultContentBody } from "dc-delivery-sdk-js";
 import { init } from "dc-visualization-sdk";
 import Visualizer from "src/components/Visualizer";
 
+type props = {
+  shop: string
+  host: string
+}
 
-export const VisualizationPage: NextPage = () => {
+export const VisualizationPage = ({shop, host} : props) => {
   const [content, setContent] = useState<DefaultContentBody | any>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -29,13 +33,13 @@ export const VisualizationPage: NextPage = () => {
 
   useEffect(() => {
     loadVizContent();
-  });
+  },[]);
 
   if (loading) return <h2>Loading</h2>;
 
   if (error) return <h2>Something went wrong loading content.</h2>;
 
-  return <Visualizer data={content} />;
+  return <Visualizer data={content} shop={shop} />;
 };
 
 export default VisualizationPage;

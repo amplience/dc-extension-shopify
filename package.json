@@ -41,7 +41,7 @@
     "build-prod": "npm-run-all clean build start",
     "docker:db": "docker compose -f docker-compose.db.yml up",
     "docker:dev": "docker compose -f docker-compose.dev.yml up",
-    "start": "ts-node dist/server/server.js",
+    "local:start": "pm2 start ecosystem.config.json --no-daemon",
     "prod:start": "pm2 start ecosystem.config.json"
   },
   "dependencies": {
