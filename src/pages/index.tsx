@@ -19,7 +19,6 @@ import {
     DynamicContent,
     Extension,
 } from 'dc-management-sdk-js'
-import { access } from 'fs'
 import React, { useCallback, useState, useEffect, useRef } from 'react'
 import {
     isAmplienceConnected,
@@ -315,10 +314,6 @@ const Index: React.FC<props> = ({ shop, host, hostName }: props) => {
 
                             
                             if (selectedExtensions.length > 0) {
-
-                                /* console.log('existingIndex', existingIndex)
-                                console.log('selectedExtensions', selectedExtensions) */
-
                                 //throw a warning to let the user know the form was not submitted
                                 setWarning(
                                     `Amplience Extensions are already installed on the hub: "${newHub?.hub.name}".`
@@ -354,7 +349,6 @@ const Index: React.FC<props> = ({ shop, host, hostName }: props) => {
                                     }
                                 )
                             } else {
-                                console.log('create else')
                                 extensions.map((extension) => {
                                     newHub.hub.related.extensions.create(extension)
                                 })
@@ -368,7 +362,6 @@ const Index: React.FC<props> = ({ shop, host, hostName }: props) => {
                             setIsInstalled(true)
 
                         } else {
-                            console.log('create init')
                             extensions.map((extension) => {
                                 newHub.hub.related.extensions.create(extension)
                             })
@@ -543,10 +536,6 @@ const Index: React.FC<props> = ({ shop, host, hostName }: props) => {
                                     const fetchRes = await fetchReq.json()
 
                                     if (fetchReq.ok) {
-                                        console.log(
-                                            'Created Schema: ',
-                                            schema.id
-                                        )
                                         return fetchRes
                                     }
 
@@ -562,11 +551,6 @@ const Index: React.FC<props> = ({ shop, host, hostName }: props) => {
                                     throw error
                                 } catch (err: any) {
                                     updateSchema()
-                                    console.log(
-                                        'Schema: ',
-                                        schema.id,
-                                        ' Updated'
-                                    )
                                 }
                             })
                         }
@@ -652,12 +636,6 @@ const Index: React.FC<props> = ({ shop, host, hostName }: props) => {
                                     await contentType.related.contentTypeSchema.update(
                                         updatedcachedSchema
                                     )
-
-                                    console.log(
-                                        'Content Type: ',
-                                        ct.label,
-                                        ' Updated & Synced'
-                                    )
                                 })
                             } else {
                                 contentTypes.map(async (contentType) => {
@@ -667,7 +645,6 @@ const Index: React.FC<props> = ({ shop, host, hostName }: props) => {
                                             await contentRepo.related.contentTypes.assign(
                                                 res.id!
                                             )
-                                            console.log('Created Content Type')
                                         })
                                 })
                             }
@@ -679,7 +656,6 @@ const Index: React.FC<props> = ({ shop, host, hostName }: props) => {
                                         await contentRepo.related.contentTypes.assign(
                                             res.id!
                                         )
-                                        console.log('Created Content Type')
                                     })
                             })
                         }

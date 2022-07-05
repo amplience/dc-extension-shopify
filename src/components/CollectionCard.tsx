@@ -4,50 +4,69 @@ import Image from './Image'
 type collectionCardProps = {
     data?: any
     showPrice?: boolean
+    shop?: string
 }
 
-const CollectionCard = ({
-    data,
-    showPrice
-}: collectionCardProps) => {
-
+const CollectionCard = ({ data, showPrice, shop }: collectionCardProps) => {
     if (!data) return null
 
-    const product = data.node != undefined ? data.node : data;
+    const product = data.node != undefined ? data.node : data
 
-    const handleize = (str : string) => {
-      return str.toLowerCase().replace(/[^\w\u00C0-\u024f]+/g, "-").replace(/^-+|-+$/g, "");
+    const handleize = (str: string) => {
+        return str
+            .toLowerCase()
+            .replace(/[^\w\u00C0-\u024f]+/g, '-')
+            .replace(/^-+|-+$/g, '')
     }
 
-    const relativeLink = `https://amplience-extension.myshopify.com/products/${product.handle}`
+    const relativeLink = `${shop}/products/${product.handle}`
+
+    const shopifyImage =
+        product.featuredImage != null &&
+        typeof product.featuredImage?.url !== undefined
+            ? {
+                  src: product.featuredImage?.url,
+                  alt: product.featuredImage?.altText,
+              }
+            : {
+                  src: 'https://bigcontent.io/cms/icons/ca-types-image.png',
+                  alt: 'placeholder product image',
+              }
 
     return (
         <article className={`block h-full w-auto`}>
-             <a className="block" href={relativeLink}>
-      <div className="relative aspect-5x4">
-        <Image
-          src={product.featuredImage?.url}
-          alt={product.featuredImage?.altText}
-          layout="fill"
-          objectFit="cover"
-        />
-      </div>
-      {product.title && (
-        <h3 className="mb-1 text-black font-bold text-base whitespace-pre-line">
-          {product.title}
-        </h3>
-      )}
-      {product.vendor && (
-        <a className="text-gray-400 text-base whitespace-pre-line" href={`https://amplience-extension.myshopify.com/collections/${handleize(product.vendor)}`}>
-          {product.vendor}
-        </a>
-      )}
-      {!showPrice && (
-        <p className="text-gray-900 text-base whitespace-pre-line">
-          ${product.priceRange.minVariantPrice.amount}
-        </p>
-      )}
-    </a>
+            <a className="block" href={relativeLink}>
+                <div className="relative aspect-5x4">
+                    <Image
+                        src={shopifyImage.src}
+                        alt={shopifyImage.alt}
+                        layout="fill"
+                        objectFit="cover"
+                    />
+                </div>
+            </a>
+            {product.title && (
+                <a className="block" href={relativeLink}>
+                    <h3 className="mb-1 text-black font-bold text-base whitespace-pre-line">
+                        {product.title}
+                    </h3>
+                </a>
+            )}
+            {product.vendor && (
+                <a
+                    className="text-gray-400 text-base whitespace-pre-line"
+                    href={`${shop}/collections/${handleize(product.vendor)}`}
+                >
+                    {product.vendor}
+                </a>
+            )}
+            {!showPrice && (
+                <a className="block" href={relativeLink}>
+                    <p className="text-gray-900 text-base whitespace-pre-line">
+                        ${product.priceRange.minVariantPrice.amount / 100}
+                    </p>
+                </a>
+            )}
         </article>
     )
 }
