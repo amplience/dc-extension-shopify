@@ -47,7 +47,7 @@ const Slider = ({ data, shop }: sliderProps) => {
           }
           `
             case 'product-picker':
-                if(data.productPicker.queryString == undefined) return
+                if(data.productPicker)
                 return data.productPicker.queryString
             case 'product-filter':
                 if(data['product-filter'])
@@ -67,7 +67,8 @@ const Slider = ({ data, shop }: sliderProps) => {
                   variables: queryString.variables,
               })
             : (queryData = { query: queryString })
-        if (queryString.length > 0) {
+
+            console.log('try')
             try {
                 const dbRes = await fetch(`/api/shop-session?shop=${shop}`)
                 const dbData = await dbRes.json()
@@ -77,6 +78,7 @@ const Slider = ({ data, shop }: sliderProps) => {
                     }&query=${JSON.stringify(queryData)}`
                 )
                 const res = await req.json()
+                console.log(res)
 
                 if (res == null) return
 
@@ -93,7 +95,7 @@ const Slider = ({ data, shop }: sliderProps) => {
             } catch (error: any) {
                 console.error(error.message)
             }
-        }
+        
     }
 
     const slideRender = (data: any, showPrice: boolean) => {
