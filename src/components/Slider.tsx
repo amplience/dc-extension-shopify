@@ -66,9 +66,8 @@ const Slider = ({ data, shop }: sliderProps) => {
                   query: queryString.query,
                   variables: queryString.variables,
               })
-            : (queryData = { query: queryString })
+            : (queryData = { query: queryString });
 
-            console.log('try')
             try {
                 const dbRes = await fetch(`/api/shop-session?shop=${shop}`)
                 const dbData = await dbRes.json()
@@ -78,7 +77,6 @@ const Slider = ({ data, shop }: sliderProps) => {
                     }&query=${JSON.stringify(queryData)}`
                 )
                 const res = await req.json()
-                console.log(res)
 
                 if (res == null) return
 

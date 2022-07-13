@@ -70,7 +70,7 @@ const ShopifyApp = (props: ShopifyAppProps) => {
                 config={{
                     apiKey,
                     host: host,
-                    forceRedirect: false,
+                    forceRedirect: true,
                 }}
             >
                 <ShopifyApolloProvider Component={Component} shop={shop} host={host} {...pageProps} />
