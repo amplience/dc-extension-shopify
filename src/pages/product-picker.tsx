@@ -56,12 +56,10 @@ const ProductPicker = ({ shop, hostName }: ProductPickerProps) => {
     async function loadFieldValues() {
         const dceSdk = sdkRef.current
 
-        //console.log('dceSdk:', dceSdk)
 
         if (typeof dceSdk !== 'undefined') {
             const fieldValue = (await dceSdk.field.getValue()) as FieldModel
 
-            //console.log('fieldValue:', fieldValue)
 
             // queryString may not exist yet and products[] may be empty...
             if (typeof fieldValue !== 'undefined' && fieldValue.queryString && fieldValue.products.length > 0) {
@@ -70,7 +68,6 @@ const ProductPicker = ({ shop, hostName }: ProductPickerProps) => {
 
                 // DceSDK passed here because without this argument, the fetchProductsGQL
                 // function loses reference to the SDK object
-                console.log(fieldValue.products)
                 const queryString  = generateQuery(fieldValue.products)
                 const productData = await fetchProductsGQL(
                     queryString,
@@ -172,7 +169,6 @@ const ProductPicker = ({ shop, hostName }: ProductPickerProps) => {
 
             if (typeof dceSdk !== 'undefined') {
                 // Build new query to store on amplience field
-                console.log('product change')
                 const storefrontQuery = generateStorefrontQuery(newProducts)
                 await dceSdk.field.setValue({
                     products: productIds,
@@ -193,8 +189,6 @@ const ProductPicker = ({ shop, hostName }: ProductPickerProps) => {
      */
     const handleRemoveProduct = useCallback(
         async (productId) => {
-            console.log('trigger remove')
-
             const dceSdk = sdkRef.current
 
             const updatedProducts = products.filter((product) => {
@@ -207,9 +201,7 @@ const ProductPicker = ({ shop, hostName }: ProductPickerProps) => {
 
             if (typeof dceSdk !== 'undefined') {
                 // Build new query to store on amplience field
-                console.log('remove')
                 const storefrontQuery = generateStorefrontQuery(updatedProducts)
-                console.log(storefrontQuery)
                 await dceSdk.field.setValue({
                     products: updatedProductIds,
                     queryString: storefrontQuery,
@@ -241,7 +233,6 @@ const ProductPicker = ({ shop, hostName }: ProductPickerProps) => {
                     })
 
                     if (typeof dceSdk !== 'undefined') {
-                        console.log('drag end')
                         // Build new query to store on amplience field
                         const storefrontQuery = generateStorefrontQuery(newArray)
                         dceSdk.field.setValue({
@@ -262,7 +253,6 @@ const ProductPicker = ({ shop, hostName }: ProductPickerProps) => {
     // Generates the GraphQL Query string to request products from Admin Storefront API
     // This is stored on the amplience field.
     const generateQuery : (productIds : string[]) => string = (productIds) => {
-        console.log(productIds)
         if (productIds.length < 1) return ``
         const productQueries: string[] = []
         productIds.forEach((product, index) => {

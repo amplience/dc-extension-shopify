@@ -27,9 +27,9 @@ const sessionStorage = new DynamoClient()
 Shopify.Context.initialize({
     API_KEY: SHOPIFY_API_KEY,
     API_SECRET_KEY: SHOPIFY_API_SECRET,
+    API_VERSION: ApiVersion.January22, // all supported versions are available, as well as "unstable" and "unversioned"
     SCOPES: SCOPES.split(','),
     HOST_NAME: HOST.replace(/https:\/\//, ''),
-    API_VERSION: ApiVersion.October21,
     IS_EMBEDDED_APP: false,
     SESSION_STORAGE: new Shopify.Session.CustomSessionStorage(
         sessionStorage.storeShopSession.bind(sessionStorage),

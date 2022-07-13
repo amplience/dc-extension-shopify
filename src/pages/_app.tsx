@@ -1,5 +1,5 @@
 import { Provider, useAppBridge } from '@shopify/app-bridge-react'
-import { authenticatedFetch, getSessionToken } from '@shopify/app-bridge-utils'
+import { authenticatedFetch } from '@shopify/app-bridge-utils'
 import { Redirect } from '@shopify/app-bridge/actions'
 import { AppProvider } from '@shopify/polaris'
 import '../styles/global.css'

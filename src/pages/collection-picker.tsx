@@ -156,10 +156,6 @@ const CollectionPicker = ({host, shop}:CollectionPickerProps) => {
             // Set state with present field values after SDK is initialized
             //@ts-ignore
             fetchCollections(sdkRef.current?.params.installation.token)
-            //@ts-ignore
-            console.log(sdkRef.current?.params.installation.token);
-
-
             sdkRef.current?.frame.startAutoResizer()
         }
     }, [dceSdkMounted])
@@ -185,7 +181,6 @@ const CollectionPicker = ({host, shop}:CollectionPickerProps) => {
                     title: title,
                     maxLength: 6
                 } as FieldModel)
-                console.log(setValue)
             } catch (error : any) {
                 console.log(error);
             }
